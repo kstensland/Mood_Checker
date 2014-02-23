@@ -1,0 +1,3 @@
+git add .
+commit -m 'Removed aoo.js'
+git push origin master

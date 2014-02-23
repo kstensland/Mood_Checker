@@ -68,7 +68,7 @@ class TweetReader():
         resp, content = http.request(url, 'GET')
         enData = json.loads(content)['response']
         try:
-            return enData
+            return enData['songs'][0]
         except:
             return None
 
@@ -105,11 +105,11 @@ class TweetReader():
                     
                     # If EchoNest found any songs from the data
                     if len(enData['songs']) > 0:
-                        #print "Found Song:"
-                        #print enData['artist_name'],seperator,enData['title']
-                        #print enData['audio_summary']['valence']
-                        #print "---------"
-                        return enData['songs'][0]
+                        print "Found Song:"
+                        print enData['artist_name'],seperator,enData['title']
+                        print enData['audio_summary']['valence']
+                        print "---------"
+                        return enData
                 # There was no song found for those two phrases
                 except KeyError:
                     """print "-----ERROR-----"
@@ -133,11 +133,11 @@ class TweetReader():
                     
                     # If EchoNest found any songs from the data
                     if len(enData['songs']) > 0:
-                        #print "Found Song:"
-                        #print enData['artist_name'],seperator,enData['title']
-                        #print enData['audio_summary']['valence']
-                        #print "---------"
-                        return enData['songs'][0]
+                        print "Found Song:"
+                        print enData['artist_name'],seperator,enData['title']
+                        print enData['audio_summary']['valence']
+                        print "---------"
+                        return enData
 
                     
                 except KeyError:
@@ -267,6 +267,9 @@ class TweetReader():
         return False    
 
     def storeTweetInDB(self, tweetData, enData):
+        #print tweet
+        print type(enData)
+        print "DATABASE RESULTS"
         
         try:
             # Store the user data into the interface
@@ -292,6 +295,7 @@ class TweetReader():
             if tweetID is None:
                 pyDate = datetime.strptime(tweetData['created_at'], "%a %b %d %H:%M:%S +0000 %Y")
                 date = pyDate.strftime("%Y-%m-%d %H:%M:%S")
+                print "THE DATE IS:",date
                 self.db.execute("INSERT INTO tweet("+
                                 "twitterID, userID, text, creation_time, is_music_tweet) "+ 
                                 "VALUES (%s, %s, %s, %s, %s)", 
@@ -299,34 +303,30 @@ class TweetReader():
                                  True,))
                 self.con.commit()
                 self.db.execute("select id from tweet where tweet.twitterID = %s", 
-                                (tweetData['id'],))
+                                (str(tweetData['user']['id']),))
                 tweetID = self.db.fetchone()
-
+            
             # Next store the song into the database
             self.db.execute("SELECT id FROM Song WHERE Song.echonestID = %s", 
-                            (enData['id'],))
-            songID = self.db.fetchone()
-            
+                            (enData['songs'],))
+            tweetID = self.db.fetchone()
+
             # If the song is not already in the database
             if songID is None:
-                self.db.execute("INSERT INTO Song("+
-                                "echonestID, name, artist, valence) "+ 
-                                "VALUES (%s, %s, %s, %s)", 
-                                (enData['id'], enData['title'], 
-                                 enData['artist_name'],enData['audio_summary']['valence'],))
+                pyDate = datetime.strptime(tweetData['created_at'], "%a %b %d %H:%M:%S +0000 %Y")
+                date = pyDate.strftime("%Y-%m-%d %H:%M:%S")
+                print "THE DATE IS:",date
+                self.db.execute("INSERT INTO tweet("+
+                                "twitterID, userID, text, creation_time, is_music_tweet) "+ 
+                                "VALUES (%s, %s, %s, %s, %s)", 
+                                (tweetData['id_str'], userID, tweetData['text'], date,
+                                 True,))
                 self.con.commit()
-                self.db.execute("select id from song where song.echonestID = %s", 
-                                (enData['id'],))
-                songID = self.db.fetchone()
+                self.db.execute("select id from tweet where tweet.twitterID = %s", 
+                                (str(tweetData['user']['id']),))
+                tweetID = self.db.fetchone()
             
-            self.db.execute("INSERT INTO TweetToSong("+
-                            "songID, tweetID) "+ 
-                            "VALUES (%s, %s)", 
-                            (tweetID, songID,))
-                             
-            self.con.commit()
-            print enData['artist_name'], 'by', enData['title']
-            return True
+            
         except UnicodeEncodeError:
             print "unicode error with ", tweetData['id_str']
         except:

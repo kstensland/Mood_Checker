@@ -23,21 +23,17 @@ class TweetListener(StreamListener):
         self.today = date.today()
         self.itr = 0
         print "Today is: ", str(self.today)
-
-        path, dirs, files = os.walk(self.tweetDir).next()
-        self.numFiles = len(files) + 100
-        print "There are currently", self.numFiles, "tweets stored. Adding more now."
-        print "\n______________________________________\n\tCOLLECTING TWEETS\tDO NOT CLOSE THIS WINDOW\n______________________________________\n"
+        
         #Create the directory for today
         if not os.path.exists(self.tweetDir + str(self.today)):
             os.makedirs(self.tweetDir + str(self.today))
         
     def on_data(self, data):
         self.itr += 1
-        # All files will follow format: data/tweets/[itr].json
-        f = open(self.tweetDir + str(self.itr + self.numFiles) + '.json', 'w')
-        #print str(self.itr + self.numFiles) + '.json'
+        # All files will follow format: data/tweets/[today's date]/[itr].json
+        f = open(self.tweetDir + '2014-02-14/' + str(self.itr) + '.json', 'a')
         f.write(data)
+        #f.write(data.replace(",", ,"\n") + "\n\n")
         f.close()
         return True
 
@@ -50,4 +46,4 @@ if __name__ == '__main__':
     auth.set_access_token(access_token, access_token_secret)
 
     stream = Stream(auth, l)
-    stream.filter(track=['#spotify', '#itunes', '#nowplaying', '#thisismyjam', '#musicmonday', 'np', 'thisismyjam'])
+    stream.filter(track=['#spotify', '#itunes', '#nowplaying', '#thisismyjam', '#musicmonday', 'np'])

@@ -15,25 +15,31 @@ def recreateDB():
                'PRIMARY KEY(id))')
     
     db.execute('CREATE TABLE tweet('+
-               'id INT NOT NULL,'+
+               'id INT NOT NULL auto_increment,'+
                'twitterID varchar(24) NOT NULL,'+
                'userID INT NOT NULL,'+
                'text varchar(140) NOT NULL,'+
                'creation_time DATETIME NOT NULL,'+
-               'valence FLOAT NOT NULL,'+
+               'valence FLOAT,'+
                'is_music_tweet BOOLEAN,'+
                'PRIMARY KEY(id),'+
                'FOREIGN KEY (userID) REFERENCES user(id))')
     
     db.execute('CREATE TABLE Song('+
-               'id INT NOT NULL,'+
+               'id INT NOT NULL auto_increment,'+
                'echonestID varchar(24) NOT NULL,'+
-               'tweetID INT NOT NULL,'+
                'name varchar(140) NOT NULL,'+
                'artist varchar(140) NOT NULL,'+
                'valence FLOAT NOT NULL,'+
-               'hyperlink varchar(60),'+
+               #'hyperlink varchar(60),'+
+               'PRIMARY KEY(id))')
+
+    db.execute('CREATE TABLE TweetToSong('+
+               'id INT NOT NULL auto_increment,'+
+               'songID INT NOT NULL,'+
+               'tweetID INT NOT NULL,'+
                'PRIMARY KEY(id),'+
+               'FOREIGN KEY (songId) references Song(id),'+
                'FOREIGN KEY (tweetID) REFERENCES tweet(id))')
     
     print "DONE"
